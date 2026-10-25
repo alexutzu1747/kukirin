@@ -32,24 +32,27 @@ TextButton.MouseButton1Click:Connect(function()
     isRunning = true
     
     local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        local root = char.HumanoidRootPart
-        local originalCFrame = root.CFrame
-        local startTime = tick()
-        local duration = 1.0 
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        local root = char:FindFirstChild("HumanoidRootPart")
         
-        while tick() - startTime < duration do
-            local alpha = (tick() - startTime) / duration
-            local currentAngle = alpha * 59.3 
-            local heightOffset = math.sin(alpha * math.pi) * 30 
+        if humanoid and root then
+            -- Forțăm o săritură reală
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             
-            root.CFrame = originalCFrame + Vector3.new(0, heightOffset, 0) * CFrame.Angles(0, currentAngle, 0)
-            task.wait()
+            -- Facem rotirea (spin) rapidă în aer
+            local startTime = tick()
+            local duration = 1.5 -- 1.5 secunde de rotire
+            
+            while tick() - startTime < duration do
+                -- Rotim caracterul treptat pe axa Y
+                root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(45), 0)
+                task.wait(0.03)
+            end
         end
-        
-        task.wait(1.0)
-        root.CFrame = originalCFrame
     end
     
+    task.wait(0.5)
     isRunning = false
 end)
+
