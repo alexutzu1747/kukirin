@@ -9,7 +9,6 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KukirinHelper"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = ScreenGui or PlayerGui
 ScreenGui.Parent = PlayerGui
 
 local TextButton = Instance.new("TextButton")
@@ -57,3 +56,4 @@ TextButton.MouseButton1Click:Connect(function()
     task.wait(0.5)
     isRunning = false
 end)
+
