@@ -18,7 +18,7 @@ TextButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 TextButton.TextSize = 18
 TextButton.Font = Enum.Font.SourceSansBold
-TextButton.Text = "Sari cu Trotineta (300$)"
+TextButton.Text = "Spin cu Trotineta (300$)"
 TextButton.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -34,33 +34,60 @@ TextButton.MouseButton1Click:Connect(function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         local root = char.HumanoidRootPart
-        local originalCFrame = root.CFrame
         
-        -- Căutăm trotineta (poate fi unelte în caracter sau un model atașat)
-        local scooter = char:FindFirstChild("Scooter") or char:FindFirstChild("Kukirin") or char:FindFirstChildOfClass("Model")
+        -- Căutăm trotineta în inventar, în caracter sau în vehiculele active
+        local vehicle = nil
+        for _, obj in ipairs(char:GetChildren()) do
+            if obj:IsA("Model") or obj:IsA("Tool") then
+                vehicle = obj
+                break
+            end
+        end
+        
+        -- Dacă nu e în caracter, o căutăm în Workspace după nume
+        if not vehicle then
+            for _, obj in ipairs(workspace:GetChildren()) do
+                if obj.Name:lower()..find("kukirin") or obj.Name:lower()..find("scooter") or obj.Name:lower()..find("bike") then
+                    if obj:FindFirstChild("HumanoidRootPart") or obj:IsA("Model") then
+                        vehicle = obj
+                        break
+                    end
+                end
+            end
+        end
+        
+        local originalCFrame = root.CFrame
+        if vehicle and vehicle:IsA("Model") and vehicle.PrimaryPart then
+            originalCFrame = vehicle.PrimaryPart.CFrame
+        end
         
         local startTime = tick()
-        local duration = 1.2 -- Durata mișcării în aer
+        local duration = 1.2
         
         while tick() - startTime < duration do
             local alpha = (tick() - startTime) / duration
-            local currentAngle = alpha * 59.3 -- Câte rotații (spin) să facă
-            local heightOffset = math.sin(alpha * math.pi) * 15 -- Înălțimea la care urcă (cu tot cu trotinetă)
+            local currentAngle = alpha * 59.3 
+            local heightOffset = math.sin(alpha * math.pi) * 15 
             
-            -- Ridicăm și rotim jucătorul împreună cu tot ce deține
             local newCFrame = originalCFrame + Vector3.new(0, heightOffset, 0)
-            root.CFrame = newCFrame * CFrame.Angles(0, currentAngle, 0)
             
-            -- Dacă trotineta e separat în caracter, o mișcăm și pe ea odată cu root-ul
-            if scooter and scooter:IsA("Model") and scooter.PrimaryPart then
-                scooter:SetPrimaryPartCFrame(root.CFrame)
+            -- Dacă am găsit vehiculul, mișcăm vehiculul cu totul (te ține pe el)
+            if vehicle and vehicle:IsA("Model") and vehicle.PrimaryPart then
+                vehicle:SetPrimaryPartCFrame(newCFrame * CFrame.Angles(0, currentAngle, 0))
+            else
+                -- Variantă alternativă: urcăm ambele elemente dacă sunt separate
+                root.CFrame = newCFrame * CFrame.Angles(0, currentAngle, 0)
             end
             
             task.wait()
         end
         
-        -- Revenire la sol la poziția inițială
-        root.CFrame = originalCFrame
+        -- Revenire la sol
+        if vehicle and vehicle:IsA("Model") and vehicle.PrimaryPart then
+            vehicle:SetPrimaryPartCFrame(originalCFrame)
+        else
+            root.CFrame = originalCFrame
+        end
     end
     
     task.wait(0.5)
